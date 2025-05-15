@@ -13,9 +13,12 @@ beyaz = (255, 255, 255)
 mavi = (0, 150, 255)
 yesil = (0, 200, 0)
 kirmizi = (255, 0, 0)
+SIYAH = (0, 0, 0)
+BEYAZ = (255, 255, 255)
+MAVI = (0, 150, 255)
 
 # Oyuncu
-kus_x = 202
+kus_x = 300
 kus_y = 300
 kus_y_hiz = 0
 yercekimi = 0.5
@@ -24,8 +27,8 @@ ziplama = -8
 ates_resmi =[pygame.image.load("newgame\\asd.png"),pygame.image.load("newgame\\asd0.png"),pygame.image.load("newgame\\asd1.png"),pygame.image.load("newgame\\asd2.png"),pygame.image.load("newgame\\asd3.png"),pygame.image.load("newgame\\asd4.png"),pygame.image.load("newgame\\asd5.png"),pygame.image.load("newgame\\asd6.png"),pygame.image.load("newgame\\asd7.png"),pygame.image.load("newgame\\asd8.png")] 
 ates_resmii =[pygame.transform.scale(ates_resmi[0], (108, 36)),pygame.transform.scale(ates_resmi[1], (108, 36)),pygame.transform.scale(ates_resmi[2], (108, 36)),pygame.transform.scale(ates_resmi[3], (108, 36)),pygame.transform.scale(ates_resmi[4], (108, 36)),pygame.transform.scale(ates_resmi[5], (108, 36)),pygame.transform.scale(ates_resmi[6], (108, 36)),pygame.transform.scale(ates_resmi[7], (108, 36))]
 
-ates_x = 94
-ates_y = 300
+ates_x = 195
+ates_y = 295
 ates_y_hiz = 0
 
 # Borular
@@ -42,15 +45,29 @@ yeni_boru()
 
 # Skor
 skor = 0
-font = pygame.font.SysFont(None, 40)
+font = pygame.font.SysFont(None, 40, bold=True)
 i = 0 
+
+
+# Dikdörtgen (oval kenarlı) GAMEOVER butonu
+yazi = font.render("GAME OVER", True, beyaz)
+buton_rect = pygame.Rect(400, 200, 200, 80)
+
+#Yeniden Başlat Butonu 
+yazi_try = font.render("TRY", True, beyaz)
+buton_try = pygame.Rect(400, 280, 100, 40)
+
+#Skor Butonu 
+yazi_skor = font.render("Your Score:", True, SIYAH) 
+buton_skor = pygame.Rect(400, 120, 200, 80)
+
+
 
 # Oyun döngüsü
 oyun_bitti = False
 while True:
     i += 1
-    
-    
+          
     ekran.fill(mavi)
 
     # Etkinlikler
@@ -63,6 +80,18 @@ while True:
                 kus_y_hiz = ziplama
                 ates_y_hiz = ziplama
 
+    if oyun_bitti:
+                   
+        # Oval kenarlı dikdörtgen çiz
+        pygame.draw.rect(ekran, yesil, buton_rect, border_radius=20)
+        #pygame.draw.rect(ekran, kirmizi, buton_try, border_radius=30)
+        # Yazıyı ortala
+        yazi_rect = yazi.get_rect(center=buton_rect.center)
+        #yazi_try0  = yazi_try.get_rect(center=buton_try.center)
+        yazi_skor0 = yazi_skor.get_rect(center=buton_skor.center)
+        ekran.blit(yazi, yazi_rect)
+        #ekran.blit(yazi_try, yazi_try0)
+        ekran.blit(font.render("Your Score:  "+str(skor), True, SIYAH), yazi_skor0)
 
     if not oyun_bitti:
         # Fizik
@@ -95,7 +124,11 @@ while True:
                 if kus_y < boru['y'] or kus_y > boru['y'] + boru_bosluk:
                     oyun_bitti = True
         if kus_y > yukseklik or kus_y < 0:
+
             oyun_bitti = True
+
+            
+
             # BIR END GAME EKLEMESI YAPILICAK
 
     # Oyuncu çiz
@@ -124,7 +157,7 @@ while True:
         pygame.draw.rect(ekran, kirmizi, (boru['x'], boru['y'] + boru_bosluk, boru_genislik, yukseklik))
 
     # Skor
-    skor_yazi = font.render(f"Skor: {skor}", True, kirmizi)
+    skor_yazi = font.render(f"Score: {skor}", True, kirmizi)
     
     ekran.blit(skor_yazi, (10, 10))
 
