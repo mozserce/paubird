@@ -24,6 +24,20 @@ kus_y_hiz = 0
 yercekimi = 0.5
 ziplama = -8    
 
+# Patlama sprite animasyonu
+bonus_patlama_animasyonu = False
+bonus_patlama_index = 0
+bonus_patlama_pos = (0, 0)
+
+#arkaplan resim
+arka_plan = pygame.image.load("background/background.png")
+arka_plan = pygame.transform.scale(arka_plan, (genislik, yukseklik))
+
+# Patlama animasyonu
+patlama_resimleri = [pygame.image.load(f"Flash/flash{0}{i}.png") for i in range(8)]
+patlama_resimleri = [pygame.transform.scale(img, (60, 60)) for img in patlama_resimleri]
+
+
 ates_resmi =[pygame.image.load("newgame\\asd.png"),pygame.image.load("newgame\\asd0.png"),pygame.image.load("newgame\\asd1.png"),pygame.image.load("newgame\\asd2.png"),pygame.image.load("newgame\\asd3.png"),pygame.image.load("newgame\\asd4.png"),pygame.image.load("newgame\\asd5.png"),pygame.image.load("newgame\\asd6.png"),pygame.image.load("newgame\\asd7.png"),pygame.image.load("newgame\\asd8.png")] 
 ates_resmii =[pygame.transform.scale(ates_resmi[0], (108, 36)),pygame.transform.scale(ates_resmi[1], (108, 36)),pygame.transform.scale(ates_resmi[2], (108, 36)),pygame.transform.scale(ates_resmi[3], (108, 36)),pygame.transform.scale(ates_resmi[4], (108, 36)),pygame.transform.scale(ates_resmi[5], (108, 36)),pygame.transform.scale(ates_resmi[6], (108, 36)),pygame.transform.scale(ates_resmi[7], (108, 36))]
 
@@ -35,6 +49,19 @@ ates_y_hiz = 0
 boru_genislik = 60
 boru_bosluk = 150
 borular = []
+
+##Bonus kare nesne /yeni eklenen
+bonus_var = False
+bonus_x = 1000
+bonus_y = random.randint(100, 500)
+bonus_size = 30
+bonus_timer = 0
+
+## Bonus efekt
+bonus_efekt_var = False
+bonus_efekt_timer = 0
+bonus_efekt_pos = (0, 0)
+
 
 def yeni_boru():
     yukseklik = random.randint(100, 400)
@@ -58,7 +85,7 @@ yazi_try = font.render("TRY", True, beyaz)
 buton_try = pygame.Rect(400, 280, 100, 40)
 
 #Skor Butonu 
-yazi_skor = font.render("Your Score:", True, SIYAH) 
+yazi_skor = font.render("Your Score:", True, beyaz) 
 buton_skor = pygame.Rect(400, 120, 200, 80)
 
 
@@ -68,7 +95,7 @@ oyun_bitti = False
 while True:
     i += 1
           
-    ekran.fill(mavi)
+    ekran.blit(arka_plan, (0, 0))
 
     # Etkinlikler
     for etkinlik in pygame.event.get():
@@ -94,6 +121,56 @@ while True:
         ekran.blit(font.render("Your Score:  "+str(skor), True, SIYAH), yazi_skor0)
 
     if not oyun_bitti:
+
+        # Bonus patlama sprite animasyonu ilerlet
+        if bonus_patlama_animasyonu:
+            bonus_patlama_index += 1
+            if bonus_patlama_index >= len(patlama_resimleri):
+                bonus_patlama_animasyonu = False
+
+
+        ## efekt süresi azalt
+        if bonus_efekt_var:
+            bonus_efekt_timer -= 1
+            if bonus_efekt_timer <= 0:
+                bonus_efekt_var = False
+
+
+        # Bonus nesne kontrolü
+        bonus_timer += 1
+        if bonus_timer > 300 and not bonus_var:
+            bonus_var = True
+            bonus_x = genislik
+            bonus_y = random.randint(100, 500)
+            bonus_timer = 0
+            bonus_color = (random.randint(100, 255), random.randint(100, 255), random.randint(100, 255))
+
+        if bonus_var:
+            bonus_x -= 4  # ekranın soluna doğru hareket 
+            ## Y.e
+            if bonus_x + bonus_size < 0:
+                bonus_var = False
+
+        # Çarpışma kontrolü (kuş kareye çarparsa)
+            kus_rect = pygame.Rect(kus_x, kus_y, 30, 30)
+            bonus_rect = pygame.Rect(bonus_x, bonus_y, bonus_size, bonus_size)
+            if kus_rect.colliderect(bonus_rect):
+                # Kuşla çarpıştıysa en yakın boruyu sil
+                en_yakin_boru = None
+                for boru in borular:
+                    if boru['x'] > kus_x:
+                        en_yakin_boru = boru
+                        break
+                if en_yakin_boru:
+                    borular.remove(en_yakin_boru)
+                skor +=3 
+                bonus_var = False  # bonus çarpışınca kaybolsun
+                # Sprite patlama animasyonu başlat
+                bonus_patlama_animasyonu = True
+                bonus_patlama_index = 0
+                bonus_patlama_pos = (bonus_x, bonus_y)
+
+      
         # Fizik
         kus_y_hiz += yercekimi
         kus_y += kus_y_hiz
@@ -127,9 +204,6 @@ while True:
 
             oyun_bitti = True
 
-            
-
-            # BIR END GAME EKLEMESI YAPILICAK
 
     # Oyuncu çiz
     pygame.draw.rect(ekran, kirmizi, (kus_x, kus_y, 30, 30))
@@ -149,6 +223,20 @@ while True:
         ekran.blit(ates_resmii[6], (ates_x, ates_y))
     if i % 8 == 0 :
         ekran.blit(ates_resmii[7], (ates_x, ates_y))
+
+    # Bonus patlama efekti
+ #   if bonus_efekt_var:
+ #       pygame.draw.circle(ekran, (255, 200, 0), bonus_efekt_pos, 20 + (30 - bonus_efekt_timer))
+
+
+    if bonus_var:
+        pygame.draw.rect(ekran, bonus_color, (bonus_x, bonus_y, bonus_size, bonus_size))
+
+
+    #if bonus_var:
+    #   pygame.draw.rect(ekran, (255, 255, 0), (bonus_x, bonus_y, bonus_size, bonus_size))
+    if bonus_patlama_animasyonu and bonus_patlama_index < len(patlama_resimleri):
+        ekran.blit(patlama_resimleri[bonus_patlama_index], bonus_patlama_pos)
 
 
     # Borular çiz
