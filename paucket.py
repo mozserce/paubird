@@ -11,7 +11,7 @@ saat = pygame.time.Clock()
 # Renkler
 beyaz = (255, 255, 255)
 mavi = (0, 150, 255)
-yesil = (0, 200, 0)
+yesil = (117, 167, 150)
 kirmizi = (255, 0, 0)
 SIYAH = (0, 0, 0)
 
@@ -20,7 +20,7 @@ roket_x = 300
 roket_y = 300
 roket_y_hiz = 0
 yercekimi = 0.5
-ziplama = -8   
+ziplama = -4   
 
 roket_resmi = pygame.image.load("pictures/rocket.png")
 roket_resmi = pygame.transform.scale(roket_resmi, (80, 80))
@@ -29,7 +29,7 @@ bonus_patlama_animasyonu = False
 bonus_patlama_index = 0
 bonus_patlama_pos = (0, 0)
 
-arka_plan = pygame.image.load("pictures/background.png")
+arka_plan = pygame.image.load("pictures/background.jpeg")
 arka_plan = pygame.transform.scale(arka_plan, (genislik, yukseklik))
 
 patlama_resimleri = [pygame.image.load(f"pictures/Flash/flash{0}{i}.png") for i in range(8)]
@@ -47,7 +47,7 @@ boru_bosluk = 150
 bonus_var = False
 bonus_x = 1000
 bonus_y = random.randint(100, 500)
-bonus_size = 35
+bonus_size = 80
 bonus_timer = 0
 
 bonus_efekt_var = False
@@ -57,6 +57,20 @@ bonus_efekt_pos = (0, 0)
 bonus_resmi = pygame.image.load("pictures/nisangah.png")
 bonus_resmi = pygame.transform.scale(bonus_resmi, (bonus_size, bonus_size))
 
+##UFO Eklemesi/ Ufo nesnesi oluşturma
+
+ufo_resmi = pygame.image.load("pictures/ufo.png")  # kendi resim yoluna göre ayarla
+ufo_resmi = pygame.transform.scale(ufo_resmi, (80, 80))
+
+ufo_var = False
+ufo_x = genislik
+ufo_y = random.randint(100, 500)
+ufo_timer = 0
+ufo_hiz = 5
+
+ufo_patlama_animasyonu = False
+ufo_patlama_index = 0
+ufo_patlama_pos = (0, 0)
 
 def yeni_boru():
     yukseklik_boru = random.randint(100, 400)
@@ -135,6 +149,36 @@ while True:
                 bonus_patlama_index = 0
                 bonus_patlama_pos = (bonus_x, bonus_y)
 
+        ##UFO Yönetimi
+                # === UFO Yönetimi ===
+        ufo_timer += 1
+        if ufo_timer > 180 and not ufo_var:
+            ufo_var = True
+            ufo_x = genislik
+            ufo_y = random.randint(100, 500)
+            ufo_timer = 0
+
+        if ufo_var:
+            ufo_x -= ufo_hiz
+            if ufo_x + 80 < 0:
+                ufo_var = False
+
+            roket_rect = pygame.Rect(roket_x, roket_y, 50, 50)
+            ufo_rect = pygame.Rect(ufo_x, ufo_y, 80, 80)
+            if roket_rect.colliderect(ufo_rect):
+                ufo_var = False
+                oyun_bitti = True
+                ufo_patlama_animasyonu = True
+                ufo_patlama_index = 0
+                ufo_patlama_pos = (ufo_x, ufo_y)
+
+        
+        ## deneme
+        tuslar = pygame.key.get_pressed()
+        if tuslar[pygame.K_SPACE]:
+            roket_y_hiz = ziplama
+
+
         roket_y_hiz += yercekimi
         roket_y += roket_y_hiz
 
@@ -174,8 +218,17 @@ while True:
 
         ekran.blit(boru_resmi, (boru['x'], ust_boru_y))
         ekran.blit(pygame.transform.flip(boru_resmi, False, True), (boru['x'], alt_boru_y))
+    ##Ufo çzimi
+    if ufo_var:
+        ekran.blit(ufo_resmi, (ufo_x, ufo_y))
 
-    skor_yazi = font.render(f"Score: {skor}", True, kirmizi)
+    if ufo_patlama_animasyonu and ufo_patlama_index < len(patlama_resimleri):
+        ekran.blit(patlama_resimleri[ufo_patlama_index], ufo_patlama_pos)
+        ufo_patlama_index += 1
+        if ufo_patlama_index >= len(patlama_resimleri):
+            ufo_patlama_animasyonu = False
+
+    skor_yazi = font.render(f"Score: {skor}", True, beyaz)
     ekran.blit(skor_yazi, (10, 10))
 
     pygame.display.flip()
